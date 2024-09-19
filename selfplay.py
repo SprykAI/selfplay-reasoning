@@ -103,9 +103,9 @@ for epoch in tqdm(range(epochs), desc="Training Progress"):
 
         for query in query_tensors:
             response = tokenizer.decode(query)
-            sneaky_response = response
             
             while True:
+                sneaky_response = response
                 #### Step 1: Get single-step response from Prover (PPO Model)
                 prover_step = prover_generate(ppo_model1, [response], tokenizer, generation_kwargs)[0]
                 response += prover_step + "\n"
