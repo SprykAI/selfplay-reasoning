@@ -3,9 +3,8 @@ import torch
 import re
 
 def prover_generate(model, query_tensors, tokenizer, generation_kwargs):
-    prover_prompt = """Provide the next step in responding to the following query. 
-    If this is the final step, end your response.
-    Otherwise, end your response with a double newline (\n\n).
+    prover_prompt = """Respond to the query. Reason step by step. Split steps with a double newline (\n\n).
+    After finishing the reasoning end your response with a reasoning summary.
     Query: """
     
     full_prompts = [prover_prompt + tokenizer.decode(q) for q in query_tensors]
