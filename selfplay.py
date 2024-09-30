@@ -120,7 +120,7 @@ for epoch in tqdm(range(epochs), desc="Training Progress"):
                 
                 #### Step 4: Compute reward scores
                 prover_reward = -prover_score
-                sneaky_reward = 1 if sneaky_score == -1 or sneaky_score == 0 else -1
+                sneaky_reward = 1 if sneaky_score == -1 else -1 if sneaky_score == 1
                 verifier_reward = 1 if sneaky_score == 1 else -1
                 
                 all_prover_rewards.append(prover_reward)
