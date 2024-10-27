@@ -26,6 +26,14 @@ ppo_config = PPOConfig(
     gradient_accumulation_steps=1
 )
 
+generation_kwargs = {
+    'max_length': 10000,
+    'num_return_sequences': 1,
+    'temperature': 0.7,
+    'top_k': 50,
+    'top_p': 0.95,
+    'do_sample': True
+}
 # Initialize PPO trainers
 ppo_trainer1 = PPOTrainer(ppo_config, ppo_model1, tokenizer=tokenizer)
 ppo_trainer2 = PPOTrainer(ppo_config, ppo_model2, tokenizer=tokenizer)
