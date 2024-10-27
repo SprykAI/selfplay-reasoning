@@ -14,7 +14,7 @@ ppo_model2 = AutoModelForCausalLM.from_pretrained(model_name)
 verifier_model = AutoModelForCausalLM.from_pretrained(model_name)
 
 # Configure PPO training
-ppo_config = PPOConfig(batch_size=1, ppo_epochs=4, clip_range=0.2, lr=1e-5, model_name=model_name)
+ppo_config = PPOConfig(batch_size=1, ppo_epochs=1, lr=1e-5, model_name=model_name)
 
 # Initialize PPO trainers
 ppo_trainer1 = PPOTrainer(ppo_model1, tokenizer, **ppo_config.to_dict())
