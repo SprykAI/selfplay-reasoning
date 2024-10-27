@@ -190,7 +190,7 @@ Step to verify:
 
 epochs = 1
 for epoch in tqdm(range(epochs), desc="Training Progress"):
-    for batch in tqdm(ppo_trainer.dataloader, desc=f"Epoch {epoch + 1}"):
+    for batch in tqdm(ppo_trainer1.dataloader, desc=f"Epoch {epoch + 1}"):
         query_tensors = batch["input_ids"]
         
         for query in query_tensors:
