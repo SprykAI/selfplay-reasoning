@@ -1,6 +1,7 @@
 from tqdm import tqdm
 import torch
 import re
+from datasets import load_dataset, DataLoader
 from transformers import AutoModelForCausalLM, AutoTokenizer, Trainer, TrainingArguments
 from trl import PPOTrainer, PPOConfig
 from trl.models import AutoModelForCausalLMWithValueHead
