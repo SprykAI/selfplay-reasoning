@@ -2,7 +2,7 @@ from tqdm import tqdm
 import torch
 import re
 from transformers import AutoModelForCausalLM, AutoTokenizer, Trainer, TrainingArguments
-from trl import PPOv2Trainer, PPOv2Config
+from trl import PPOTrainer, PPOConfig
 
 # Load models and tokenizer
 model_name = "Qwen/Qwen2.5-Math-1.5B-Instruct"  # replace with the model you prefer
@@ -14,12 +14,17 @@ ppo_model2 = AutoModelForCausalLM.from_pretrained(model_name)
 verifier_model = AutoModelForCausalLM.from_pretrained(model_name)
 
 # Configure PPO training
-ppo_config = PPOv2Config(batch_size=1, num_ppo_epochs=1, learning_rate=1e-5, output_dir="ppo_models")
+ppo_config = PPOConfig(
+    batch_size=1,
+    learning_rate=1e-5,
+    ppo_epochs=1,
+    output_dir="ppo_models"
+)
 
 # Initialize PPO trainers
-ppo_trainer1 = PPOv2Trainer(config=ppo_config, model=ppo_model1, tokenizer=tokenizer)
-ppo_trainer2 = PPOv2Trainer(config=ppo_config, model=ppo_model2, tokenizer=tokenizer)
-ppo_trainer3 = PPOv2Trainer(config=ppo_config, model=verifier_model, tokenizer=tokenizer)
+ppo_trainer1 = PPOTrainer(ppo_config, ppo_model1, tokenizer=tokenizer)
+ppo_trainer2 = PPOTrainer(ppo_config, ppo_model2, tokenizer=tokenizer)
+ppo_trainer3 = PPOTrainer(ppo_config, verifier_model, tokenizer=tokenizer)
 
 dataset = load_dataset("TIGER-Lab/MathInstruct")
 
