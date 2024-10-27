@@ -17,9 +17,9 @@ verifier_model = AutoModelForCausalLM.from_pretrained(model_name)
 ppo_config = PPOv2Config(batch_size=1, num_ppo_epochs=1, learning_rate=1e-5, output_dir="ppo_models")
 
 # Initialize PPO trainers
-ppo_trainer1 = PPOv2Trainer(ppo_model1, tokenizer, **ppo_config.to_dict())
-ppo_trainer2 = PPOv2Trainer(ppo_model2, tokenizer, **ppo_config.to_dict())
-ppo_trainer3 = PPOv2Trainer(verifier_model, tokenizer, **ppo_config.to_dict())
+ppo_trainer1 = PPOv2Trainer(config=ppo_config, model=ppo_model1, tokenizer=tokenizer)
+ppo_trainer2 = PPOv2Trainer(config=ppo_config, model=ppo_model2, tokenizer=tokenizer)
+ppo_trainer3 = PPOv2Trainer(config=ppo_config, model=verifier_model, tokenizer=tokenizer)
 
 dataset = load_dataset("TIGER-Lab/MathInstruct")
 
