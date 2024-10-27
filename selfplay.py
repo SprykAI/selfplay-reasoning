@@ -3,15 +3,16 @@ import torch
 import re
 from transformers import AutoModelForCausalLM, AutoTokenizer, Trainer, TrainingArguments
 from trl import PPOTrainer, PPOConfig
+from trl.models import AutoModelForCausalLMWithValueHead
 
 # Load models and tokenizer
 model_name = "Qwen/Qwen2.5-Math-1.5B-Instruct"  # replace with the model you prefer
 
 # Load models and tokenizer
 tokenizer = AutoTokenizer.from_pretrained(model_name)
-ppo_model1 = AutoModelForCausalLM.from_pretrained(model_name)
-ppo_model2 = AutoModelForCausalLM.from_pretrained(model_name)
-verifier_model = AutoModelForCausalLM.from_pretrained(model_name)
+ppo_model1 = AutoModelForCausalLMWithValueHead.from_pretrained(model_name)
+ppo_model2 = AutoModelForCausalLMWithValueHead.from_pretrained(model_name)
+verifier_model = AutoModelForCausalLMWithValueHead.from_pretrained(model_name)
 
 # Configure PPO training
 ppo_config = PPOConfig(
