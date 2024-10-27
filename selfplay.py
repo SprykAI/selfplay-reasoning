@@ -16,9 +16,11 @@ verifier_model = AutoModelForCausalLM.from_pretrained(model_name)
 # Configure PPO training
 ppo_config = PPOConfig(
     batch_size=1,
+    log_with="wandb",
     learning_rate=1e-5,
     ppo_epochs=1,
-    output_dir="ppo_models"
+    mini_batch_size=1,
+    gradient_accumulation_steps=1
 )
 
 # Initialize PPO trainers
