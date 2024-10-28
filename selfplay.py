@@ -3,7 +3,7 @@ import torch
 import re
 from torch.utils.data import DataLoader
 from datasets import load_dataset
-from transformers import AutoModelForCausalLM, AutoTokenizer, Trainer, TrainingArguments
+from transformers import AutoModelForCausalLM, AutoTokenizer, Trainer, TrainingArguments, TextStreamer
 from trl import PPOTrainer, PPOConfig
 from trl.models import AutoModelForCausalLMWithValueHead
 
@@ -16,6 +16,7 @@ ppo_model1 = AutoModelForCausalLMWithValueHead.from_pretrained(model_name)
 ppo_model2 = AutoModelForCausalLMWithValueHead.from_pretrained(model_name)
 verifier_model = AutoModelForCausalLMWithValueHead.from_pretrained(model_name)
 
+# Configure PPO training
 # Configure PPO training
 ppo_config = PPOConfig(
     batch_size=1,
@@ -61,84 +62,61 @@ def get_device(model):
     return next(model.parameters()).device
 
 def prover_generate(model, query, tokenizer, generation_kwargs):
-    prover_prompt = """You are a careful reasoning agent. Your task is to help solve problems by providing clear logical steps. Each step will be evaluated for correctness.
-
-For each step:
-1. Analyze the current state
-2. Provide ONE logical step in solving it
-3. Enclose your step within <step></step> tags
-4. Mark your step as either:
-   - <correct> if correct
-   - <incorrect><explain>explanation of the error</explain> if wrong
-   - <neutral> if neither helpful nor wrong
-5. Continue with next step until solution is complete
-6. End with [EOS] when solved
-
-Query: """
-    
-    # Handle the query properly whether it's a list or single string
+    # Convert query to string if it's a list
     if isinstance(query, list):
         query = query[0]
     
-    full_prompt = prover_prompt + query
+    chat = [
+        {"role": "system", "content": "You are a careful reasoning agent. Your task is to help solve problems by providing clear logical steps. Each step will be evaluated for correctness.\n\nFor each step:\n1. Analyze the current state\n2. Provide ONE logical step in solving it\n3. Enclose your step within <step></step> tags\n4. Mark your step as either:\n   - <correct> if correct\n   - <incorrect><explain>explanation of the error</explain> if wrong\n   - <neutral> if neither helpful nor wrong\n5. Continue with next step until solution is complete\n6. End with [EOS] when solved"},
+        {"role": "user", "content": query}
+    ]
+    
+    full_prompt = tokenizer.apply_chat_template(chat, tokenize=False)
     device = get_device(model)
     inputs = tokenizer(full_prompt, return_tensors="pt", padding=True)
     inputs = {k: v.to(device) for k, v in inputs.items()}
     
-    # Create a copy of generation_kwargs to modify
     gen_kwargs = generation_kwargs.copy()
+    gen_kwargs['eos_token_id'] = tokenizer.encode('</step>')[0]
+    gen_kwargs['streamer'] = TextStreamer(tokenizer, skip_prompt=True)
     
-    # Set the EOS token IDs
-    eos_token_ids = tokenizer.encode('</step>')[0]  # Take first token ID
-    gen_kwargs['eos_token_id'] = eos_token_ids
-    
+    print("\nProver generating:", flush=True)
     outputs = model.generate(**inputs, **gen_kwargs)
     response = tokenizer.decode(outputs[0], skip_special_tokens=True)
-    
-    # Extract only the generated part (after the prompt)
     response = response[len(full_prompt):].strip()
     return response
 
 def sneaky_prover_generate(model, query, tokenizer, generation_kwargs):
-    sneaky_prompt = """You are a reasoning agent that introduces subtle mistakes. Your task is to take the current problem state and previous correct reasoning, then provide an alternative step that contains a deliberately misleading error.
-
-Your response should:
-1. Look at the previous reasoning and current problem state
-2. Provide ONE step that appears plausible but contains a subtle error
-3. Enclose your step within <step></step> tags
-4. Explain your deliberate mistake within <explain></explain> tags
-
-Previous reasoning and Query: """
-    
     if isinstance(query, list):
         query = query[0]
     
-    full_prompt = sneaky_prompt + query
+    chat = [
+        {"role": "system", "content": "You are a reasoning agent that introduces subtle mistakes. Your task is to take the current problem state and previous correct reasoning, then provide an alternative step that contains a deliberately misleading error.\n\nYour response should:\n1. Look at the previous reasoning and current problem state\n2. Provide ONE step that appears plausible but contains a subtle error\n3. Enclose your step within <step></step> tags\n4. Explain your deliberate mistake within <explain></explain> tags"},
+        {"role": "user", "content": query}
+    ]
+    
+    full_prompt = tokenizer.apply_chat_template(chat, tokenize=False)
     device = get_device(model)
     inputs = tokenizer(full_prompt, return_tensors="pt", padding=True)
     inputs = {k: v.to(device) for k, v in inputs.items()}
     
     gen_kwargs = generation_kwargs.copy()
-    eos_token_ids = tokenizer.encode('</explain>')[0]
-    gen_kwargs['eos_token_id'] = eos_token_ids
+    gen_kwargs['eos_token_id'] = tokenizer.encode('</explain>')[0]
+    gen_kwargs['streamer'] = TextStreamer(tokenizer, skip_prompt=True)
     
+    print("\nSneaky generating:", flush=True)
     outputs = model.generate(**inputs, **gen_kwargs)
     response = tokenizer.decode(outputs[0], skip_special_tokens=True)
-    
     response = response[len(full_prompt):].strip()
     return response
 
 def verifier_check(verifier_model, step_text, is_sneaky, sneaky_explanation, tokenizer, generation_kwargs):
-    verifier_prompt = """You are a verification agent. Your task is to carefully analyze reasoning steps for any mistakes.
-
-For each step you analyze, provide your verdict using ONE of these formats:
-1. <correct> - if the step is completely correct
-2. <incorrect><explain>detailed explanation of the error</explain> - if you find any mistake
-3. <neutral> - if the step neither helps nor hinders the solution
-
-Step to verify: """
+    chat = [
+        {"role": "system", "content": "You are a verification agent. Your task is to carefully analyze reasoning steps for any mistakes.\n\nFor each step you analyze, provide your verdict using ONE of these formats:\n1. <correct> - if the step is completely correct\n2. <incorrect><explain>detailed explanation of the error</explain> - if you find any mistake\n3. <neutral> - if the step neither helps nor hinders the solution"},
+        {"role": "user", "content": f"Reasoning to verify: {step_text}"}
+    ]
     
-    verifier_input = verifier_prompt + step_text
+    verifier_input = tokenizer.apply_chat_template(chat, tokenize=False)
     device = get_device(verifier_model)
     inputs = tokenizer(verifier_input, return_tensors="pt", padding=True)
     inputs = {k: v.to(device) for k, v in inputs.items()}
@@ -155,7 +133,9 @@ Step to verify: """
     
     gen_kwargs['eos_token_id'] = stop_token_ids[0]
     gen_kwargs['pad_token_id'] = tokenizer.pad_token_id if tokenizer.pad_token_id is not None else tokenizer.eos_token_id
+    gen_kwargs['streamer'] = TextStreamer(tokenizer, skip_prompt=True)
     
+    print("\nVerifier generating:", flush=True)
     try:
         outputs = verifier_model.generate(**inputs, **gen_kwargs)
         verifier_output = tokenizer.decode(outputs[0], skip_special_tokens=True)
@@ -214,7 +194,7 @@ for epoch in tqdm(range(epochs), desc="Training Progress"):
                 # Step 3: Verify both steps
                 prover_reward, _, prover_verification = verifier_check(
                     verifier_model, 
-                    f"<step>{prover_step}</step>", 
+                    current_state + f"\n<step>{prover_step}</step>",  # Provide full context + new step
                     False, 
                     None, 
                     tokenizer, 
@@ -223,7 +203,7 @@ for epoch in tqdm(range(epochs), desc="Training Progress"):
                 
                 sneaky_reward, verifier_reward, sneaky_verification = verifier_check(
                     verifier_model,
-                    f"<step>{sneaky_step}</step>",
+                    current_state + f"\n<step>{sneaky_step}</step>",  # Provide full context + sneaky step
                     True,
                     sneaky_explanation,
                     tokenizer,
