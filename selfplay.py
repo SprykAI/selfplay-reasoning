@@ -17,7 +17,6 @@ ppo_model2 = AutoModelForCausalLMWithValueHead.from_pretrained(model_name)
 verifier_model = AutoModelForCausalLMWithValueHead.from_pretrained(model_name)
 
 # Configure PPO training
-# Configure PPO training
 ppo_config = PPOConfig(
     batch_size=1,
     log_with="wandb",
