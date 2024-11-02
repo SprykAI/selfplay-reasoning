@@ -1,7 +1,7 @@
 To do:
 1. Finish the selfplay.py file:
    - ~~add stop tokens for the critic~~
-   - make the models actually load (I think we can use the same base model for all of those)
+   - ~~make the models actually load (I think we can use the same base model for all of those)~~
    - ~~make the loop run until the prover finished solving the question~~
    - verify if there aren't any errors in the code
 2. Figure out a way how to make the model split the task into more steps (original prover-verifier games paper does that so maybe we can find some useful info there), I think we could make it work in 2 steps, first just like in prover-verifier games paper (in order to make the model split everything in steps), and then in our way for actually accuracy improvement
