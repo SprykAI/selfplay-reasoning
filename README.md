@@ -62,5 +62,5 @@ flowchart TD
 4. Make a dataset with increasingly harder questions
 
 ## Long term:
-1. How to improve the model in the domains without verifiable ground truth other by just making it plan before?
+1. How to improve the model in the domains without easily verifiable ground truth?
 
