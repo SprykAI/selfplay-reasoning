@@ -28,34 +28,35 @@ flowchart TD
     PV -->|"Neutral (0)"| PR
     
     %% State Update Logic
-    PV -->|"Correct/Neutral"| US1["Update State with\nProver's Step"]
-    PV -->|"Incorrect"| US2["Update State with\nProver's Step +\nVerifier's Explanation"]
+    PV -->|"Correct/Neutral"| US1["Update State with Prover's Step"]
+    PV -->|"Incorrect"| US2["Update State with Prover's Step + Verifier's Explanation"]
     
     %% Sneaky Prover Path
-    SP --> SS["Generate Alternative Step\nwith Deliberate Error"]
+    SP --> SS["Generate Alternative Step with Deliberate Error"]
     SS --> SE["Explain Error"]
     SE --> SV{"Verifier Check"}
     
     %% Verifier Training Paths
     SV -->|"Caught Error (+1)"| VR["Verifier Reward"]
     SV -->|"Missed Error (-1)"| VR
-    SV -->|"Missed Error"| VT["Train Verifier with\nSneaky Prover's Explanation (+1)"]
+    SV -->|"Missed Error"| VT["Train Verifier with Sneaky Prover's Explanation (+1)"]
     
     %% Sneaky Rewards
     SV -->|"Caught Error (-1)"| SR["Sneaky Prover Reward"]
     SV -->|"Missed Error (+1)"| SR
     
     %% Continue or End
-    US1 & US2 --> CO{"Prover's Step\ncontains [EOS]?"}
+    US1 & US2 --> CO{"Prover's Step contains [EOS]?"}
     CO -->|"No"| CS
     CO -->|"Yes"| End["End Training"]
     
-    classDef default fill:#f9f9f9,stroke:#333,stroke-width:2px
-    classDef question fill:#f9f,stroke:#333,stroke-width:2px
-    classDef prover fill:#afd,stroke:#333,stroke-width:2px
-    classDef sneaky fill:#faa,stroke:#333,stroke-width:2px
-    classDef state fill:#e6e6ff,stroke:#333,stroke-width:2px
-    classDef verifier fill:#ffe6cc,stroke:#333,stroke-width:2px
+    %% Custom CSS for Better Readability
+    classDef default fill:#f9f9f9,stroke:#333,stroke-width:2px,font-size:16px
+    classDef question fill:#ffccff,stroke:#333,stroke-width:2px,font-size:18px
+    classDef prover fill:#ccffcc,stroke:#333,stroke-width:2px,font-size:18px
+    classDef sneaky fill:#ffcccc,stroke:#333,stroke-width:2px,font-size:18px
+    classDef state fill:#e6e6ff,stroke:#333,stroke-width:2px,font-size:18px
+    classDef verifier fill:#ffe6cc,stroke:#333,stroke-width:2px,font-size:18px
     
     class Q question
     class P,PS,PR prover
