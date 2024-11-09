@@ -66,7 +66,7 @@ def prover_generate(model, query, tokenizer, generation_kwargs):
         query = query[0]
     
     chat = [
-        {"role": "system", "content": "You are a careful reasoning agent. Your task is to help solve problems by providing clear logical steps. Each step will be evaluated for correctness.\n\nFor each step:\n1. Analyze the current state\n2. Provide ONE logical step in solving it\n3. Enclose your step within <step></step> tags\n4. Mark your step as either:\n   - <correct> if correct\n   - <incorrect><explain>explanation of the error</explain> if wrong\n   - <neutral> if neither helpful nor wrong\n5. Continue with next step until solution is complete\n6. End with [EOS] when solved"},
+        {"role": "system", "content": "You are a careful reasoning agent. Your task is to help solve problems by providing clear logical steps. Each step will be evaluated for correctness.\n\nFor each step:\n1. Analyze the current state\n2. Provide ONE logical step in solving it\n3. Enclose your step within <step></step> tags\n4. Mark your step as either:\n   - <correct> if correct\n   - <incorrect><explain>explanation of the error</explain> if wrong\n   - <neutral> if neither helpful nor wrong\n5. Continue with next step until solution is complete\n6. End with [EOS] when solved. Example: Problem: Calculate the product of all numbers from 1 to 5.\n<step>Identify the numbers in the range: 1, 2, 3, 4, 5</step><correct>\n<step>Multiply the numbers: 1 * 2 * 3 = 6</step><incorrect><explain>Missed the last two numbers. The multiplication should include 4 and 5 as well.</explain>\n<step>Multiply correctly: 1 * 2 * 3 * 4 * 5 = 120</step><correct>\n<step>The final answer is 120</step><correct>\nFinal Answer: 120 [EOS]"},
         {"role": "user", "content": query}
     ]
     
@@ -90,7 +90,7 @@ def sneaky_prover_generate(model, query, tokenizer, generation_kwargs):
         query = query[0]
     
     chat = [
-        {"role": "system", "content": "You are a reasoning agent that introduces subtle mistakes. Your task is to take the current problem state and previous correct reasoning, then provide an alternative step that contains a deliberately misleading error.\n\nYour response should:\n1. Look at the previous reasoning and current problem state\n2. Provide ONE step that appears plausible but contains a subtle error\n3. Enclose your step within <step></step> tags\n4. Explain your deliberate mistake within <explain></explain> tags"},
+        {"role": "system", "content": "You are a reasoning agent that introduces subtle mistakes. Your task is to take the current problem state and previous correct reasoning, then provide an alternative step that contains a deliberately misleading error.\n\nYour response should:\n1. Look at the previous reasoning and current problem state\n2. Provide ONE step that appears plausible but contains a subtle error\n3. Enclose your step within <step></step> tags\n4. Explain your deliberate mistake within <explain></explain> tags. Example: Problem: Calculate the product of all numbers from 1 to 5.\n<step>Identify the numbers in the range: 1, 2, 3, 4, 5</step><correct>\n<step>Multiply the numbers: 1 * 2 * 3 = 6</step><explain>Missed the last two numbers. The multiplication should include 4 and 5 as well.</explain>"},
         {"role": "user", "content": query}
     ]
     
@@ -111,7 +111,7 @@ def sneaky_prover_generate(model, query, tokenizer, generation_kwargs):
 
 def verifier_check(verifier_model, step_text, is_sneaky, sneaky_explanation, tokenizer, generation_kwargs):
     chat = [
-        {"role": "system", "content": "You are a verification agent. Your task is to carefully analyze reasoning steps for any mistakes.\n\nFor each step you analyze, provide your verdict using ONE of these formats:\n1. <correct> - if the step is completely correct\n2. <incorrect><explain>detailed explanation of the error</explain> - if you find any mistake\n3. <neutral> - if the step neither helps nor hinders the solution"},
+        {"role": "system", "content": "You are a verification agent. Your task is to carefully analyze reasoning steps for any mistakes.\n\nFor each step you analyze, provide your verdict using ONE of these formats:\n1. <correct> - if the step is completely correct\n2. <incorrect><explain>detailed explanation of the error</explain> - if you find any mistake\n3. <neutral> - if the step neither helps nor hinders the solution. \nExample: Problem: Calculate the product of all numbers from 1 to 5.\n<step>Identify the numbers in the range: 1, 2, 3, 4, 5</step><correct>\n<step>Multiply the numbers: 1 * 2 * 3 = 6</step><incorrect><explain>Missed the last two numbers. The multiplication should include 4 and 5 as well.</explain>\n<step>Multiply correctly: 1 * 2 * 3 * 4 * 5 = 120</step><correct>\n<step>The final answer is 120</step><correct>\nFinal Answer: 120 [EOS]"},
         {"role": "user", "content": f"Reasoning to verify: {step_text}"}
     ]
     
