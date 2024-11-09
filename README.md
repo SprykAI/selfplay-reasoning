@@ -10,3 +10,56 @@ To do:
 
 Long term:
 1. How to improve the model in the domains without verifiable ground truth other by just making it plan before?
+
+
+# How it works?
+```mermaid
+flowchart TD
+    Q["Question/Math Problem"] --> CS["Current State"]
+    
+    CS --> P["Prover"]
+    CS --> SP["Sneaky Prover"]
+    
+    %% Regular Prover Path
+    P --> PS["Generate Solution Step"]
+    PS --> PV{"Verifier Check"}
+    PV -->|"Correct (+1)"| PR["Prover Reward"]
+    PV -->|"Incorrect (-1)"| PR
+    PV -->|"Neutral (0)"| PR
+    
+    %% State Update Logic
+    PV -->|"Correct/Neutral"| US1["Update State with\nProver's Step"]
+    PV -->|"Incorrect"| US2["Update State with\nProver's Step +\nVerifier's Explanation"]
+    
+    %% Sneaky Prover Path
+    SP --> SS["Generate Alternative Step\nwith Deliberate Error"]
+    SS --> SE["Explain Error"]
+    SE --> SV{"Verifier Check"}
+    
+    %% Verifier Training Paths
+    SV -->|"Caught Error (+1)"| VR["Verifier Reward"]
+    SV -->|"Missed Error (-1)"| VR
+    SV -->|"Missed Error"| VT["Train Verifier with\nSneaky Prover's Explanation (+1)"]
+    
+    %% Sneaky Rewards
+    SV -->|"Caught Error (-1)"| SR["Sneaky Prover Reward"]
+    SV -->|"Missed Error (+1)"| SR
+    
+    %% Continue or End
+    US1 & US2 --> CO{"Prover's Step\ncontains [EOS]?"}
+    CO -->|"No"| CS
+    CO -->|"Yes"| End["End Training"]
+    
+    classDef default fill:#f9f9f9,stroke:#333,stroke-width:2px
+    classDef question fill:#f9f,stroke:#333,stroke-width:2px
+    classDef prover fill:#afd,stroke:#333,stroke-width:2px
+    classDef sneaky fill:#faa,stroke:#333,stroke-width:2px
+    classDef state fill:#e6e6ff,stroke:#333,stroke-width:2px
+    classDef verifier fill:#ffe6cc,stroke:#333,stroke-width:2px
+    
+    class Q question
+    class P,PS,PR prover
+    class SP,SS,SE,SR sneaky
+    class CS,US1,US2 state
+    class VR,VT verifier
+```
