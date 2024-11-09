@@ -51,7 +51,7 @@ flowchart TD
     class VR,VT verifier
 ```
 
-# To do:
+## To do:
 1. Finish the selfplay.py file:
    - ~~add stop tokens for the critic~~
    - ~~make the models actually load (I think we can use the same base model for all of those)~~
@@ -64,3 +64,5 @@ flowchart TD
 ## Long term:
 1. How to improve the model in the domains without easily verifiable ground truth?
 
+## You want to help or learn more?
+If you want to help us or learn more about our idea, join our discord server where you can talk with us: https://discord.gg/mpMTynuCBh
