@@ -50,13 +50,13 @@ flowchart TD
     CO -->|"No"| CS
     CO -->|"Yes"| End["End Training"]
     
-    %% Custom CSS for Better Readability
-    classDef default fill:#f9f9f9,stroke:#333,stroke-width:2px,font-size:16px
-    classDef question fill:#ffccff,stroke:#333,stroke-width:2px,font-size:18px
-    classDef prover fill:#ccffcc,stroke:#333,stroke-width:2px,font-size:18px
-    classDef sneaky fill:#ffcccc,stroke:#333,stroke-width:2px,font-size:18px
-    classDef state fill:#e6e6ff,stroke:#333,stroke-width:2px,font-size:18px
-    classDef verifier fill:#ffe6cc,stroke:#333,stroke-width:2px,font-size:18px
+    %% Custom CSS for Better Readability with Black Text
+    classDef default fill:#f9f9f9,stroke:#333,stroke-width:2px,font-size:16px,color:black
+    classDef question fill:#ffccff,stroke:#333,stroke-width:2px,font-size:18px,color:black
+    classDef prover fill:#ccffcc,stroke:#333,stroke-width:2px,font-size:18px,color:black
+    classDef sneaky fill:#ffcccc,stroke:#333,stroke-width:2px,font-size:18px,color:black
+    classDef state fill:#e6e6ff,stroke:#333,stroke-width:2px,font-size:18px,color:black
+    classDef verifier fill:#ffe6cc,stroke:#333,stroke-width:2px,font-size:18px,color:black
     
     class Q question
     class P,PS,PR prover
